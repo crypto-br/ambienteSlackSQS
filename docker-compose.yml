@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  localhost.localstack.cloud:
+    container_name: localstack
+    image: localstack/localstack:0.13.0
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs 
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - './sqs.sh:/docker-entrypoint-initaws.d/sqs.sh'
+  servergo:
+    container_name: servergo
+    build: .
+    links:
+      - localhost.localstack.cloud
+      - worker
+    external_links:
+      - localhost.localstack.cloud
+      - worker
+    ports:
+      - 8081:8081
+  worker:
+    container_name: worker
+    build: worker/
+    links:
+      - localhost.localstack.cloud
+    external_links:
+      - localhost.localstack.cloud
+    ports:
+      - 8082:8082
